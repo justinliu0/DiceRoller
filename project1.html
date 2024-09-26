@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Dice Roller</title>
+		<style>
+			body {
+				font-family: 'Montserrat', sans-serif;
+                color: #E9DFCE;
+  				background-color: #131417;
+			}
+			
+			h1, h2 {
+				text-align: center;
+			}
+			
+			h1 {
+				margin-top: 70px;
+			}
+			
+			.input-fields {
+				text-align: center;
+			}
+			
+			.dice-amt, roll-amt {	
+				margin: 5px;
+			}
+			
+			.dice-roll {
+				text-align: center;
+				margin-top: 10px;
+                
+			}
+            
+            .dice-roll button {
+                color: #131417;
+  				background-color: #E9DFCE;
+                padding: 10px 30px; 
+                border: none; 
+                border-radius: 10px; 
+			}
+
+            #dice-count, roll-count {
+            	background-color: #E9DFCE;
+            }
+            
+            #roll-count {
+            	background-color: #E9DFCE;
+            }
+			
+			.output-table {
+				margin-top: 20px;
+				width: 40%;
+			}
+			
+			table, th, td {
+				border: 1px solid #E9DFCE;
+				border-collapse: collapse;
+				padding: 10px;
+				margin: auto;
+				width: 40%;
+			}
+            
+		</style>
+		<script>
+			let rolls = [];
+			function getRandRoll() {
+				return Math.floor(Math.random() * 6) + 1;
+			}
+
+			function roll() {
+				const diceCount = parseInt(document.getElementById("dice-count").value);
+				const rollCount = parseInt(document.getElementById("roll-count").value);
+				rolls = [];
+
+	   
+				for (let i = 0; i < diceCount; i++) {
+					let currentRoll = [];
+					for (let j = 0; j < rollCount; j++) {
+						currentRoll.push(getRandRoll());
+					}
+					rolls.push(currentRoll);
+				}
+
+				displayRolls();
+				updateStatistics();
+			}
+
+			function displayRolls() {
+				let output = "<table><tr><th>Die</th><th>Rolls</th></tr>";
+				rolls.forEach((rollArr, index) => {
+					output += `<tr><td>Die ${index + 1}</td><td>${rollArr.join(', ')}</td></tr>`;
+				});
+				output += "</table>";
+				document.getElementById("output-rolls").innerHTML = output;
+			}
+
+			function updateStatistics() {
+				let flatRolls = rolls.flat();
+				document.getElementById("mean").innerText = findMean(flatRolls);
+				document.getElementById("median").innerText = findMedian(flatRolls);
+				document.getElementById("mode").innerText = findMode(flatRolls);
+				document.getElementById("doubles").innerText = countDoubles();
+				document.getElementById("triples").innerText = countTriples();
+			}
+
+			function findMean(arr) {
+				let total = 0;
+				for (let i = 0; i < arr.length; i++) {
+					total += arr[i];
+				}
+				return (total / arr.length);
+			}
+
+			function findMedian(arr) {
+				arr.sort((a, b) => a - b);
+				const mid = Math.floor(arr.length / 2);
+				if (arr.length % 2 !== 0) {
+					return arr[mid];
+				} 
+				else {
+					return arr[mid - 1];
+				}
+			}
+
+			function findMode(arr) {
+				arr.sort((a, b) => a - b);
+
+				let maxCount = 0;
+				let modes = [];
+				let currentCount = 1;
+
+				for (let i = 1; i < arr.length; i++) {
+					if (arr[i] === arr[i - 1]) {
+						currentCount++; 
+					} else {
+						if (currentCount > maxCount) {
+							maxCount = currentCount; 
+							modes = [arr[i - 1]]; 
+						} else if (currentCount === maxCount) {
+							modes.push(arr[i - 1]); 
+						}
+						currentCount = 1; 
+					}
+				}
+
+				if (currentCount > maxCount) {
+					modes = [arr[arr.length - 1]];
+				} else if (currentCount === maxCount) {
+					modes.push(arr[arr.length - 1]);
+				}
+
+				return modes; 
+			}
+			
+			
+			function countDoubles() {
+				if (rolls.length < 2) {
+					return "N/A"; 
+				}
+				let doubleCount = 0;
+				for (let i = 0; i < rolls[0].length; i++) {
+					if (rolls[0][i] === rolls[1][i]) {
+						doubleCount++;
+					}
+				}
+				return doubleCount;
+			}
+
+			function countTriples() {
+				if (rolls.length < 3) {
+					return "N/A"; 
+				}
+				let tripleCount = 0;
+				for (let i = 0; i < rolls[0].length; i++) {
+					if (rolls[0][i] === rolls[1][i] && rolls[1][i] === rolls[2][i]) {
+						tripleCount++;
+					}
+				}
+				return tripleCount;
+			}
+		</script>
+	</head>
+
+	<body>
+		<h1>Dice Roller</h1>
+
+		<div class="input-fields">
+			<div class="dice-amt">
+				<label for="dice-count">How many dice to roll:</label>
+				<select id="dice-count">
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+				</select>
+			</div>
+
+			<div class="roll-amt">
+				<label for="roll-count">How many times to roll the dice:</label>
+				<input type="number" id="roll-count" min="1" value="1">
+			</div>
+		</div>
+
+		<div class="dice-roll">
+			<button onclick="roll()">Roll Dice</button>
+		</div>
+
+		<h2>Results</h2>
+		<div id="output-rolls"></div>
+
+		<h2>Statistics</h2>
+		<table class="output-table">
+			<tr>
+				<td>Mean:</td>
+				<td id="mean"></td>
+			</tr>
+			<tr>
+				<td>Median:</td>
+				<td id="median"></td>
+			</tr>
+			<tr>
+				<td>Mode:</td>
+				<td id="mode"></td>
+			</tr>
+			<tr>
+				<td>Doubles:</td>
+				<td id="doubles"></td>
+			</tr>
+			<tr>
+				<td>Triples:</td>
+				<td id="triples"></td>
+			</tr>
+		</table>
+	</body>
+</html>
+
+
+
+
+
+
+
